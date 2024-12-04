@@ -1,0 +1,5 @@
+newscatcherapi
+pandas
+openpyxl
+fpdf2
+tqdm
