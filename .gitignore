@@ -3,3 +3,4 @@ newscatcher_test
 output
 res/*.pkl
 nohup*
+*__pycache__*
