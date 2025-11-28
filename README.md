@@ -1,6 +1,8 @@
 # Just Renewability - data collection
 
-This repository contains the code used for collecting news data for the research project "Just Renewability" at Copenhagen University and Aalborg University
+This repository contains the code used for collecting news data for the research project "Just Renewability" at Copenhagen University and Aalborg University.
+
+The repository merely serves as documentation for how articles were collected and selected in the project. The code is not maintained. 
 
 ## About the project
 
@@ -11,3 +13,5 @@ Read more [here](https://vbn.aau.dk/en/projects/just-renewability-contesting-pub
 ## Technologies
 
 Data is collected via [Newscatcher API](https://www.newscatcherapi.com/).
+
+NOTE: The code here uses an older version of the `newscatcher` library and is not updated to work with the current version. 
