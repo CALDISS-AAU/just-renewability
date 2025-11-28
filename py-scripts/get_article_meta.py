@@ -8,7 +8,7 @@ import json
 import pandas as pd
 import re
 
-project_dir = join('/work', 'CALDISS-projects', 'Leverancer', 'dlvr_just-renewability_F24')
+project_dir = join('/work', 'dlvr_just-renewability_F24')
 modules_dir = join(project_dir, 'modules')
 sys.path.append(modules_dir)
 
@@ -28,11 +28,11 @@ sp_data_p = join(data_dir, 'articles_sp_raw.json')
 
 ## Out paths
 #arg_data_out = join(output_dir, 'articles_arg_meta_2024-08-02.xlsx')
-da_data_out = join(output_dir, 'articles_da_meta_2024-08-22.xlsx')
+da_data_out = join(output_dir, 'articles_da_meta_2025-11-28.xlsx')
 #sp_data_out = join(output_dir, 'articles_sp_meta_2024-08-02.xlsx')
 
 #arg_kw_out = join(output_dir, 'keyword-count_arg_2024-08-02.xlsx')
-da_kw_out = join(output_dir, 'keyword-count_da_2024-08-22.xlsx')
+da_kw_out = join(output_dir, 'keyword-count_da_2025-11-28.xlsx')
 #sp_kw_out = join(output_dir, 'keyword-count_sp_2024-08-02.xlsx')
 
 # CONVERT TO DFs

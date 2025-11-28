@@ -8,7 +8,7 @@ import pandas as pd
 import re
 
 # PATHS AND DIRS
-project_dir = join('/work', 'CALDISS-projects', 'Leverancer', 'dlvr_just-renewability_F24')
+project_dir = join('/work', 'dlvr_just-renewability_F24')
 data_dir = join(project_dir, 'data')
 
 ## Keyword extraction
@@ -60,6 +60,8 @@ keywords = {
         'solcelle',
         'vind',
         'power to x',
+        'power-to-x', 
+        'ptx',
         '(pink brint OR atomkraft)',
         '(reindustralisering OR industralisering)',
         'vækst',
