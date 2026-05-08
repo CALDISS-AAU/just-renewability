@@ -2,41 +2,59 @@ library(ggplot2)
 library(readr)
 library(readxl)
 library(dplyr)
+library(writexl)
 
-ready_table_spain <- "./output/articles_sp_monthly_summary.csv"
-ready_table_argentina <- "./output/articles_arg_monthly_summary.csv"
+#ready_table_spain <- "./output/articles_sp_monthly_summary.csv"
+#ready_table_argentina <- "./output/articles_arg_monthly_summary.csv"
+
+setwd("/work/CALDISS-projects/Leverancer/dlvr_just-renewability_F24")
+
+ready_table_argentina <- "/work/CALDISS-projects/Leverancer/dlvr_just-renewability_F24/output/articles_arg_monthly_summary.csv"
+ready_table_spain <- "/work/CALDISS-projects/Leverancer/dlvr_just-renewability_F24/output/articles_sp_monthly_summary.csv"
 
 # X-axis: Year-Month and Y-axis: number of articles
 visualize <- function(input_dataset, output_png, title) {
   figure <- read_csv(input_dataset, show_col_types = FALSE)
-  figure <- figure[order(figure[["Year-Month"]]), ]
+  figure <- figure[order(figure[["Year-Month"]]), ]  #Year and month must be ordered
   figure[["Year-Month"]] <- factor(
     figure[["Year-Month"]],
     levels = unique(figure[["Year-Month"]])
   )
 
-  plot <- ggplot(figure, aes(x = `Year-Month`)) +
+  plot <- ggplot(figure, aes(x = `Year-Month`)) +    
+    #Step 3: get rid of "USED" and rename total to base. 
     geom_col(
-      aes(y = N_articles_total, fill = "Total"),
+      aes(y = N_articles_total, fill = "Base"),
       width = 0.9
     ) +
     geom_col(
       aes(y = N_articles_filtered, fill = "Filtered"),
       width = 0.9
     ) +
-    geom_col(
-      aes(y = N_articles_used, fill = "Used"),
-      width = 0.9
+    #geom_col(
+    #  aes(y = N_articles_used, fill = "Used"),
+    #  width = 0.9
+    #) +
+
+    #Step4: please add percentage onto the bar icons
+    geom_text(
+      aes(
+        y= N_articles_filtered,
+        label= paste0(round(N_articles_filtered/N_articles_total * 100), "%")
+        ),
+      colour = "white",
+      nudge_y = -100
     ) +
     scale_fill_manual(
       values = c(
-        "Total" = "darkblue",
+        "Base" = "darkblue",
         "Filtered" = "royalblue",
         "Used" = "lightblue"
       ),
-      breaks = c("Total", "Filtered", "Used"),
+      breaks = c("Base", "Filtered", "Used"),
       name = NULL
     ) +
+    scale_y_continuous(limits = c(0, 3000), breaks = c(0, 500, 1000, 1500, 2000, 2500, 3000)) + 
     labs(
       x = "Year-Month",
       y = "Number of articles",
@@ -56,12 +74,12 @@ visualize <- function(input_dataset, output_png, title) {
 
 visualize(
   ready_table_spain,
-  "./output/plots/timelines/articles_sp_timeline.png",
+  "./output/plots/articles_sp_timeline.png",
   "Spain articles chronological order"
 )
 visualize(
   ready_table_argentina,
-  "./output/plots/timelines/articles_arg_timeline.png",
+  "./output/plots/articles_arg_timeline.png",
   "Argentina articles chronological order"
 )
 
@@ -76,7 +94,7 @@ prepare_keyword_data <- function(input_excel) {
   article_data <- read_excel(input_excel)
   keyword_columns <- grep("^keyword_", names(article_data), value = TRUE)
 
-  other_keyword_columns <- setdiff(keyword_columns, "keyword_conflicto")
+  other_keyword_columns <- setdiff(keyword_columns, c("keyword_conflicto", "keyword_power to x"))  #Step1 : get rid of "keyword_power to x". c = combine
   
   keyword_data <- article_data |> 
     select(all_of(other_keyword_columns))
@@ -87,6 +105,37 @@ prepare_keyword_data <- function(input_excel) {
 
   return(keyword_data)
 }
+
+
+#Step2: Create frequency tables for keywords. Coun no text matched per keywrds
+
+keyword_frequency_table <- function(input_excel, output_path){
+  article_data <- read_excel(input_excel)
+
+  keyword_columns <- setdiff(
+    #find column name starting with keyword_
+    grep("^keyword_", names(article_data), value= TRUE),
+    c("keyword_conflicto", "keyword_power to x")
+  )
+
+  #add each col vertically and save the number in total_text
+  frequency_table <- data.frame(
+    keyword = sub ("^keyword_", "", keyword_columns),
+    total_text = colSums(article_data[keyword_columns], na.rm = TRUE) 
+  )
+
+  frequency_table$percent_of_total_text <- round(frequency_table$total_text / nrow(article_data) * 100,
+  1)
+
+  write_xlsx(frequency_table, output_path)
+}
+
+#Run for SP + ARG
+
+keyword_frequency_table(keyword_overlap_spain_input, "./output/tables/keyword_frequency_spain.xlsx")
+keyword_frequency_table(keyword_overlap_argentina_input, "./output/tables/keyword_frequency_argentina.xlsx")
+
+
 
 compute_keyword_overlap <- function(keyword_data) {
   keyword_matrix <- as.matrix(keyword_data)
@@ -149,8 +198,8 @@ plot_keyword_overlap_heatmap <- function(input_excel, output_png, title_use) {
     ) +
     scale_colour_identity() + 
     labs(
-      x = "Keywords",
-      y = "Keywords",
+      x = "Article also mentioning [keyword]",
+      y =  "Articles about [keyword]",
       title = get("title_use", envir=environment())
     ) +
     coord_fixed() +
@@ -176,3 +225,8 @@ plot_keyword_overlap_heatmap(
   "./output/plots/keyword_overlap_arg.png",
   "Argentina Keyword Overlap"
 )
+
+
+
+
+

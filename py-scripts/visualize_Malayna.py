@@ -60,13 +60,14 @@ def compute_filtered_counts(input_excel):
     any_keyword_TRUE = input_excel[key_columns].any(axis=1)
 
     ##Check if only keyword_conflic is TRUE
-    other_keywords = [column for column in key_columns if column != "keyword_conflicto"]
-    only_conflict = input_excel["keyword_conflicto"] & ~ input_excel[other_keywords].any(axis=1)
+    keywords_exclude = ["keyword_power to x", "keyword_conflicto"]
+    other_keywords = [column for column in key_columns if column not in keywords_exclude]
+    only_excluded = input_excel[keywords_exclude].any(axis=1) & ~ input_excel[other_keywords].any(axis=1)
 
     #Exlude keywords where : 
     # A) only keyword_conflicto == TRUE 
     # B) all other keywords == FALSE
-    filter_me_ready = input_excel[any_keyword_TRUE & ~only_conflict]
+    filter_me_ready = input_excel[any_keyword_TRUE & ~only_excluded]
 
     #Count per month
     res = filter_me_ready.groupby("Year-Month").size().reset_index(name="N_articles_filtered")
