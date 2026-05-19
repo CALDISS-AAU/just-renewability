@@ -12,6 +12,25 @@ setwd("/work/CALDISS-projects/Leverancer/dlvr_just-renewability_F24")
 ready_table_argentina <- "/work/CALDISS-projects/Leverancer/dlvr_just-renewability_F24/output/articles_arg_monthly_summary.csv"
 ready_table_spain <- "/work/CALDISS-projects/Leverancer/dlvr_just-renewability_F24/output/articles_sp_monthly_summary.csv"
 
+keywords_translate <- tribble(
+  ~from, ~to,
+  "(reindustrialización OR industrialización)", "(Reindustrialisation OR Industrialisation)",
+  "(hidrógeno rosa OR nuclear)", "(Pink hydrogen OR Nuclear)",
+  "agua", "Water",
+  "apoyo", "Support", 
+  "audiencias públicas", "Public hearings",
+  "ciudadano", "Citizen",
+  "crecimiento", "Growth", 
+  "energía renovable", "Renewable energy",
+  "eólica", "Wind",
+  "futuro", "Future",
+  "hidrógeno verde", "Green hydrogen",
+  "impacto medioambiental", "Environmental impact", 
+  "participación", "Participation",
+  "solar", "Solar"
+)
+keywords_translate <- mutate(keywords_translate, from = factor(from, levels=from), to = factor(to, levels=to))
+
 # X-axis: Year-Month and Y-axis: number of articles
 visualize <- function(input_dataset, output_png, title) {
   figure <- read_csv(input_dataset, show_col_types = FALSE)
@@ -107,7 +126,7 @@ prepare_keyword_data <- function(input_excel) {
 }
 
 
-#Step2: Create frequency tables for keywords. Coun no text matched per keywrds
+#Step2: Create frequency tables for keywords. Count no text matched per keywrds
 
 keyword_frequency_table <- function(input_excel, output_path){
   article_data <- read_excel(input_excel)
@@ -181,6 +200,12 @@ plot_keyword_overlap_heatmap <- function(input_excel, output_png, title_use) {
     mutate(
       label = if_else(keyword_a == keyword_b, "-", label)
     )
+  
+  # translate
+  plot_data <- mutate(plot_data,
+                      keyword_a = recode_values(keyword_a, from = keywords_translate$from, to = keywords_translate$to),
+                      keyword_b = recode_values(keyword_b, from = keywords_translate$from, to = keywords_translate$to)
+  )
 
   heatmap_plot <- ggplot(plot_data, aes(x = keyword_b, y = keyword_a, fill = proportion)) +
     geom_tile(color = "white", linewidth = 0.4) +
@@ -188,6 +213,16 @@ plot_keyword_overlap_heatmap <- function(input_excel, output_png, title_use) {
       aes(label = label, color = text_color),
       size = 3
     ) +  
+    annotate(
+      "rect",
+      xmin = 0,   # extend left beyond first tile
+      xmax = length(unique(plot_data$keyword_b)) + 1,
+      ymin = 11 - 0.5,
+      ymax = 11 + 0.5,
+      fill = NA,
+      colour = "darkred",
+      linewidth = 1
+    ) +
     scale_fill_gradient(
       low = "#F7FBFF",
       high = "#08306B",
@@ -212,6 +247,8 @@ plot_keyword_overlap_heatmap <- function(input_excel, output_png, title_use) {
 
   dir.create(dirname(output_png), recursive = TRUE, showWarnings = FALSE)
   ggsave(output_png, plot = heatmap_plot, width = 11, height = 9, dpi=300, units = "in", scale=1)
+  
+  return(heatmap_plot)
 }
 
 plot_keyword_overlap_heatmap(
